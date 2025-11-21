@@ -12,4 +12,23 @@ class CatatanModel {
     required this.address,
     required this.type,
   });
+
+  Map<String, dynamic> toJson() {
+    return {
+      'lat': position.latitude,
+      'lon': position.longitude,
+      'note': note,
+      'address': address,
+      'type': type,
+    };
+  }
+
+  factory CatatanModel.fromJson(Map<String, dynamic> json) {
+  return CatatanModel(
+    position: LatLng(json['lat'], json['lon']),
+    note: json['note'],
+    address: json['address'],
+    type: json['type'],
+  );
+}
 }

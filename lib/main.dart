@@ -1,12 +1,9 @@
-// Import paket yang dibutuhkan
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart' as latlong;
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
-import 'catatan_model.dart'; // Import model data yang sudah dibuat
-
-// (disini) Import paket tambahan untuk tugas mandiri ke-3: Shared Preferences dan JSON
+import 'catatan_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
@@ -32,26 +29,19 @@ class MapScreen extends StatefulWidget {
 class _MapScreenState extends State<MapScreen> {
   final List<CatatanModel> _savedNotes = [];
   final MapController _mapController = MapController();
-  final TextEditingController _noteController = TextEditingController(); // (disini) Controller untuk input dialog
-
-  // (disini) Tempat untuk fungsi INIT STATE (untuk memuat data saat aplikasi dibuka)
+  final TextEditingController _noteController = TextEditingController(); 
   @override
   void initState() {
     super.initState();
-    _loadNotes(); // Panggil fungsi muat data
+    _loadNotes(); // Memanggil fungsi muat data
   }
   
-  // (disini) Tempat untuk fungsi DISPOSE
+  // fungsi dispose
   @override
   void dispose() {
     _noteController.dispose();
     super.dispose();
   }
-
-
-  // ==========================================================
-  // (disini) FUNGSI TUGAS MANDIRI 1: LOGIKA IKON KUSTOM
-  // ==========================================================
   IconData _getMarkerIcon(String type) {
     switch (type.toLowerCase()) {
       case 'rumah':
@@ -64,10 +54,6 @@ class _MapScreenState extends State<MapScreen> {
         return Icons.location_on;
     }
   }
-
-  // ==========================================================
-  // (disini) FUNGSI TUGAS MANDIRI 3: LOGIKA SIMPAN & MUAT DATA
-  // ==========================================================
   Future<void> _saveNotes() async {
     final prefs = await SharedPreferences.getInstance();
     final List<String> jsonList = _savedNotes.map((n) => json.encode(n.toJson())).toList();
@@ -86,9 +72,7 @@ class _MapScreenState extends State<MapScreen> {
   }
 
 
-  // Fungsi untuk mendapatkan lokasi saat ini
   Future<void> _findMyLocation() async {
-    // ... (kode ini tetap sama)
     bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) return;
 
@@ -106,9 +90,6 @@ class _MapScreenState extends State<MapScreen> {
     );
   }
 
-  // ==========================================================
-  // (disini) FUNGSI TUGAS MANDIRI 2: KONFIRMASI HAPUS MARKER
-  // ==========================================================
   void _showDeleteConfirmation(CatatanModel noteToDelete) {
     showDialog(
       context: context,
@@ -125,9 +106,9 @@ class _MapScreenState extends State<MapScreen> {
               child: const Text("Hapus", style: TextStyle(color: Colors.red)),
               onPressed: () {
                 setState(() {
-                  _savedNotes.remove(noteToDelete); // Hapus dari daftar
+                  _savedNotes.remove(noteToDelete);
                 });
-                _saveNotes(); // (disini) Panggil fungsi simpan data setelah penghapusan
+                _saveNotes();
                 Navigator.of(context).pop();
               },
             ),
@@ -137,7 +118,6 @@ class _MapScreenState extends State<MapScreen> {
     );
   }
 
-  // Fungsi menangani Long Press pada peta
   void _handleLongPress(latlong.LatLng point) async {
     List<Placemark> placemarks = await placemarkFromCoordinates(
       point.latitude, 
@@ -145,13 +125,11 @@ class _MapScreenState extends State<MapScreen> {
     );
 
     String address = placemarks.first.street ?? "Alamat tidak dikenal";
-    _noteController.text = ""; // Reset input
-
-    // (disini) Implementasi Dialog untuk input Catatan dan Tipe
+    _noteController.text = "";
     await showDialog(
       context: context,
       builder: (BuildContext context) {
-        String? selectedType = 'rumah'; // Default type
+        String? selectedType = 'rumah';
         return AlertDialog(
           title: Text("Buat Catatan di: ${address}"),
           content: Column(
@@ -190,10 +168,10 @@ class _MapScreenState extends State<MapScreen> {
                       position: point,
                       note: _noteController.text,
                       address: address,
-                      type: selectedType ?? 'lainnya', // (disini) Tambahkan type
+                      type: selectedType ?? 'lainnya',
                     ));
                   });
-                  _saveNotes(); // (disini) Panggil fungsi simpan data setelah penambahan
+                  _saveNotes();
                 }
                 Navigator.of(context).pop();
               },
@@ -220,17 +198,15 @@ class _MapScreenState extends State<MapScreen> {
             urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
           ),
 
-          // (disini) TEMPAT TUGAS MANDIRI 1 & 2: MarkerLayer yang dapat diklik dan ikon kustom
           MarkerLayer(
             markers: _savedNotes.map((n) => Marker(
               point: n.position,
               width: 50.0,
               height: 50.0,
-              // (disini) Tambahkan GestureDetector untuk menghapus marker (Tugas Mandiri 2)
               child: GestureDetector(
-                onTap: () => _showDeleteConfirmation(n), // Panggil konfirmasi hapus
+                onTap: () => _showDeleteConfirmation(n),
                 child: Icon(
-                  _getMarkerIcon(n.type), // (disini) Gunakan ikon kustom (Tugas Mandiri 1)
+                  _getMarkerIcon(n.type),
                   color: Colors.red,
                   size: 35.0,
                 ),
